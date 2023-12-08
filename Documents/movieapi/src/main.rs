@@ -1,7 +1,7 @@
 use crate::authenticate::handlers::authenticate;
 use authenticate::handlers::create_user;
 use axum::routing::{get, post};
-use comments::handler::post_comment;
+use comments::handler::{get_comments, post_comment};
 use mongodb::options::ClientOptions;
 use movie::handlers::{get_details, get_video, load_popular};
 use tower_http::cors::{AllowHeaders, AllowMethods, AllowOrigin, Any, Cors, CorsLayer};
@@ -10,8 +10,8 @@ mod authenticate;
 mod comments;
 mod movie;
 
-pub fn get_collection<T>(database: mongodb::Client) -> mongodb::Collection<T> {
-    database.database("movie").collection("users")
+pub fn get_collection<T>(database: mongodb::Client, name: &str) -> mongodb::Collection<T> {
+    database.database("movie").collection(&name)
 }
 
 pub async fn new_database() -> Result<mongodb::Client, mongodb::error::Error> {
@@ -37,7 +37,10 @@ async fn main() {
         .route("/popular", get(load_popular))
         .route("/details", post(get_details))
         .route("/video", post(get_video))
-        .route("/movies/:movie_id/comments", post(post_comment))
+        .route(
+            "/movies/:movie_id/comments",
+            get(get_comments).post(post_comment),
+        )
         .layer(cors_layer);
 
     let app = app.with_state(database);

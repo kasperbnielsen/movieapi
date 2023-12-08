@@ -9,7 +9,7 @@ pub async fn create_user(
     State(database): State<mongodb::Client>,
     Json(payload): Json<UserDTO>,
 ) -> Result<(), StatusCode> {
-    let collection: Collection<UserDTO> = get_collection(database);
+    let collection: Collection<UserDTO> = get_collection(database, "users");
 
     let user = collection
         .insert_one(
@@ -31,7 +31,7 @@ pub async fn authenticate(
     State(database): State<mongodb::Client>,
     Json(payload): Json<UserDTO>,
 ) -> Result<UserDTO, StatusCode> {
-    let collection: Collection<UserDTO> = get_collection(database);
+    let collection: Collection<UserDTO> = get_collection(database, "users");
 
     let user = collection
         .find_one(doc! {"username": payload.username}, None)
